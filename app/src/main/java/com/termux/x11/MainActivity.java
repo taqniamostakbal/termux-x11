@@ -185,6 +185,13 @@ public class MainActivity extends AppCompatActivity {
 
         mInputHandler = new TouchInputHandler(this, new InputEventSender(lorieView));
 
+        // Mudif: apply the stored input mode at startup. Before, the mode
+        // (touchMode) was only applied when a preference changed while the
+        // viewer was alive (onPreferencesChangedCallback), so on a fresh
+        // start the constructor's TRACKPAD default won and the "3" written
+        // by the app before launch was never applied.
+        mInputHandler.reloadPreferences(prefs);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
                 OnBackInvokedDispatcher.PRIORITY_DEFAULT,

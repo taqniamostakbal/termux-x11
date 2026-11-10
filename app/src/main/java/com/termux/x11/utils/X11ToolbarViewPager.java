@@ -90,7 +90,8 @@ public class X11ToolbarViewPager {
                 back.setOnTouchListener((view, event) -> {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
-                            view.setBackgroundColor(0xFF7F7F7F);
+                            // Mudif: brand purple instead of grey.
+                            view.setBackgroundColor(0xFF593BFE);
                             break;
 
                         case MotionEvent.ACTION_UP:

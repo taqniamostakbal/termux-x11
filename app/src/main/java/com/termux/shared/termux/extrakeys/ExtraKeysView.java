@@ -111,11 +111,13 @@ public final class ExtraKeysView extends GridLayout {
     /** Defines the default value for {@link #mButtonTextColor} */
     public static final int DEFAULT_BUTTON_TEXT_COLOR = 0xFFFFFFFF;
     /** Defines the default value for {@link #mButtonActiveTextColor} */
-    public static final int DEFAULT_BUTTON_ACTIVE_TEXT_COLOR = 0xFF80DEEA;
+    // Mudif: white, readable on the purple active background.
+    public static final int DEFAULT_BUTTON_ACTIVE_TEXT_COLOR = 0xFFFFFFFF;
     /** Defines the default value for {@link #mButtonBackgroundColor} */
     public static final int DEFAULT_BUTTON_BACKGROUND_COLOR = 0x00000000;
     /** Defines the default value for {@link #mButtonActiveBackgroundColor} */
-    public static final int DEFAULT_BUTTON_ACTIVE_BACKGROUND_COLOR = 0xFF7F7F7F;
+    // Mudif: brand purple #593BFE instead of grey.
+    public static final int DEFAULT_BUTTON_ACTIVE_BACKGROUND_COLOR = 0xFF593BFE;
 
     /** Defines the minimum allowed duration in milliseconds for {@link #mLongPressTimeout}. */
     public static final int MIN_LONG_PRESS_DURATION = 200;
