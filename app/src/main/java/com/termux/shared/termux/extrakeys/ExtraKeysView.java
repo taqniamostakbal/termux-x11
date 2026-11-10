@@ -2,9 +2,8 @@ package com.termux.shared.termux.extrakeys;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -109,12 +108,14 @@ public final class ExtraKeysView extends GridLayout {
     }
 
     /** Defines the default value for {@link #mButtonTextColor} */
-    public static final int DEFAULT_BUTTON_TEXT_COLOR = 0xFFFFFFFF;
+    // Mudif P18.3: dark text — the keys are now light cards, not black.
+    public static final int DEFAULT_BUTTON_TEXT_COLOR = 0xFF1A1A1A;
     /** Defines the default value for {@link #mButtonActiveTextColor} */
     // Mudif: white, readable on the purple active background.
     public static final int DEFAULT_BUTTON_ACTIVE_TEXT_COLOR = 0xFFFFFFFF;
     /** Defines the default value for {@link #mButtonBackgroundColor} */
-    public static final int DEFAULT_BUTTON_BACKGROUND_COLOR = 0x00000000;
+    // Mudif P18.3: white card key (was transparent on a black bar).
+    public static final int DEFAULT_BUTTON_BACKGROUND_COLOR = 0xFFFFFFFF;
     /** Defines the default value for {@link #mButtonActiveBackgroundColor} */
     // Mudif: brand purple #593BFE instead of grey.
     public static final int DEFAULT_BUTTON_ACTIVE_BACKGROUND_COLOR = 0xFF593BFE;
@@ -252,6 +253,40 @@ public final class ExtraKeysView extends GridLayout {
         return mButtonActiveTextColor;
     }
 
+    /** Get {@link #mButtonBackgroundColor}. */
+    public int getButtonBackgroundColor() {
+        return mButtonBackgroundColor;
+    }
+
+    /** Get {@link #mButtonActiveBackgroundColor}. */
+    public int getButtonActiveBackgroundColor() {
+        return mButtonActiveBackgroundColor;
+    }
+
+    /** Mudif P18.3: classic light card key background — rounded corners
+     *  (8dp) + thin border. Replaces the flat black ColorDrawable. */
+    GradientDrawable keyBackground(int color) {
+        float density = getResources().getDisplayMetrics().density;
+        GradientDrawable d = new GradientDrawable();
+        d.setColor(color);
+        d.setCornerRadius(8 * density);
+        d.setStroke(Math.max(1, Math.round(density)), 0xFFE5E0FF);
+        return d;
+    }
+
+    /** Mudif P18.3: restore a key's look after a press. A held special key
+     *  (CTRL/ALT/...) keeps the purple active look; a normal key returns
+     *  to the light card look. */
+    private void restoreKeyLook(Button button, ExtraKeyButton buttonInfo) {
+        boolean held = false;
+        if (isSpecialButton(buttonInfo)) {
+            SpecialButtonState state = mSpecialButtons.get(SpecialButton.valueOf(buttonInfo.key));
+            held = state != null && state.isActive;
+        }
+        button.setBackground(keyBackground(held ? mButtonActiveBackgroundColor : mButtonBackgroundColor));
+        button.setTextColor(held ? mButtonActiveTextColor : mButtonTextColor);
+    }
+
     /** Set {@link #mLongPressTimeout}. */
     public void setLongPressTimeout(int longPressDuration) {
         if (longPressDuration >= MIN_LONG_PRESS_DURATION && longPressDuration <= MAX_LONG_PRESS_DURATION) {
@@ -314,14 +349,8 @@ public final class ExtraKeysView extends GridLayout {
                     button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
                 }
 
-                button.setBackground(new ColorDrawable(Color.BLACK) {
-                    public boolean isStateful() {
-                        return true;
-                    }
-                    public boolean hasFocusStateSpecified() {
-                        return true;
-                    }
-                });
+                // Mudif P18.3: classic light card key, not black.
+                button.setBackground(keyBackground(mButtonBackgroundColor));
                 if (!setIcon(button, buttonInfo.key))
                     button.setText(buttonInfo.display);
                 button.setTextColor(mButtonTextColor);
@@ -336,7 +365,9 @@ public final class ExtraKeysView extends GridLayout {
                 button.setOnTouchListener((view, event) -> {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
-                            view.setBackgroundColor(mButtonActiveBackgroundColor);
+                            // Mudif P18.3: pressed key = purple card + white text.
+                            view.setBackground(keyBackground(mButtonActiveBackgroundColor));
+                            button.setTextColor(mButtonActiveTextColor);
                             // Start long press scheduled executors which will be stopped in next MotionEvent
                             startScheduledExecutors(view, buttonInfo, button);
                             return true;
@@ -346,23 +377,24 @@ public final class ExtraKeysView extends GridLayout {
                                 // Show popup on swipe up
                                 if (mPopupWindow == null && event.getY() < 0) {
                                     stopScheduledExecutors();
-                                    view.setBackgroundColor(mButtonBackgroundColor);
+                                    restoreKeyLook(button, buttonInfo);
                                     showPopup(view, buttonInfo.popup);
                                 }
                                 if (mPopupWindow != null && event.getY() > 0) {
-                                    view.setBackgroundColor(mButtonActiveBackgroundColor);
+                                    view.setBackground(keyBackground(mButtonActiveBackgroundColor));
+                                    button.setTextColor(mButtonActiveTextColor);
                                     dismissPopup();
                                 }
                             }
                             return true;
 
                         case MotionEvent.ACTION_CANCEL:
-                            view.setBackgroundColor(mButtonBackgroundColor);
+                            restoreKeyLook(button, buttonInfo);
                             stopScheduledExecutors();
                             return true;
 
                         case MotionEvent.ACTION_UP:
-                            view.setBackgroundColor(mButtonBackgroundColor);
+                            restoreKeyLook(button, buttonInfo);
                             stopScheduledExecutors();
                             // If ACTION_UP up was not from a repetitive key or was with a key with a popup button
                             if (mLongPressCount == 0 || mPopupWindow != null) {
@@ -510,7 +542,9 @@ public final class ExtraKeysView extends GridLayout {
         button.setMinimumHeight(0);
         button.setWidth(width);
         button.setHeight(height);
-        button.setBackgroundColor(mButtonActiveBackgroundColor);
+        // Mudif P18.3: popup key = purple card + white text.
+        button.setBackground(keyBackground(mButtonActiveBackgroundColor));
+        button.setTextColor(mButtonActiveTextColor);
         mPopupWindow = new PopupWindow(this);
         mPopupWindow.setWidth(LayoutParams.WRAP_CONTENT);
         mPopupWindow.setHeight(LayoutParams.WRAP_CONTENT);

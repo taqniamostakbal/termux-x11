@@ -77,7 +77,8 @@ public class X11ToolbarViewPager {
                 });
 
                 back.setOnClickListener(v -> mActivity.getTerminalToolbarViewPager().setCurrentItem(0, true));
-                back.setTextColor(0xFFFFFFFF);
+                // Mudif P18.3: dark text — the bar is a light card now.
+                back.setTextColor(0xFF1A1A1A);
                 back.setPadding(0, 0, 0, 0);
                 back.setBackground(new ColorDrawable(Color.BLACK) {
                     public boolean isStateful() {

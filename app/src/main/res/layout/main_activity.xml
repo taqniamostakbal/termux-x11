@@ -272,20 +272,21 @@
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="37.5dp"
-        android:background="#CC232323"
+        android:background="@drawable/ekbar_background"
         android:layout_gravity="bottom|center"/>
 
     <!-- Mudif: floating keyboard button. The extra-keys bar is hidden by
          default and only appears when the user taps this icon, so the
          desktop shows fullscreen. Tapping it again hides the keys.
-         Bottom margin 54dp clears the 37.5dp keys bar when it is shown. -->
+         P18.3: bar is now 56dp (28dp x 2 rows), so the 16dp gap puts the
+         FAB at 72dp from the bottom. -->
     <ImageButton
         android:id="@+id/mudif_keyboard_fab"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="91dp"
+        android:layout_marginBottom="72dp"
         android:background="@drawable/mudif_fab_bg"
         android:src="@drawable/ic_extra_key_keyboard"
         android:scaleType="fitCenter"

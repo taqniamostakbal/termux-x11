@@ -40,6 +40,12 @@ public class SpecialButtonState {
         isActive = value;
         for (Button button : buttons) {
             button.setTextColor(value ? mExtraKeysView.getButtonActiveTextColor() : mExtraKeysView.getButtonTextColor());
+            // Mudif P18.3: a held special key keeps the purple card look;
+            // released, it returns to the light card look. (Without this,
+            // a held CTRL would be white text on a white key — invisible.)
+            button.setBackground(mExtraKeysView.keyBackground(value
+                ? mExtraKeysView.getButtonActiveBackgroundColor()
+                : mExtraKeysView.getButtonBackgroundColor()));
         }
     }
 
