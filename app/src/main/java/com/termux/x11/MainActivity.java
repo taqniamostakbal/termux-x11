@@ -180,6 +180,12 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
         findViewById(R.id.exit_button).setOnClickListener((l) -> finish());
 
+        // Mudif: floating keyboard button — shows/hides the extra-keys
+        // bar on demand, so the desktop stays fullscreen until the user
+        // needs the keys. Uses the existing toggleExtraKeys() which flips
+        // the persisted additionalKbdVisible state.
+        findViewById(R.id.mudif_keyboard_fab).setOnClickListener((l) -> toggleExtraKeys());
+
         LorieView lorieView = findViewById(R.id.lorieView);
         View lorieParent = (View) lorieView.getParent();
 
