@@ -285,7 +285,7 @@
         android:layout_height="56dp"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="54dp"
+        android:layout_marginBottom="91dp"
         android:background="@drawable/mudif_fab_bg"
         android:src="@drawable/ic_extra_key_keyboard"
         android:scaleType="fitCenter"
