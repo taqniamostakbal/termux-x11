@@ -657,9 +657,16 @@ public class TouchInputHandler {
                 }
                 moveCursorByOffset(distanceX, distanceY);
             }
-            if (!(mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy) && mIsDragging) {
+            if (!(mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy) && (mIsDragging || mInputStrategy instanceof InputStrategyInterface.SimulatedTouchInputStrategy)) {
                 // Ensure the cursor follows the user's finger when the user is dragging under
                 // direct input mode.
+                // Mudif: in SimulatedTouch (the tactile-mouse mode) a plain single-finger
+                // drag must move the cursor to the finger, not only after a long-press.
+                // The old gate (mIsDragging only) meant a plain drag was consumed without
+                // moving the cursor at all, so the pointer never followed the finger.
+                // TOUCH (Null strategy) is unaffected: it is not SimulatedTouch, so it
+                // still requires mIsDragging. moveCursorToScreenPoint also forwards the
+                // position to the X server, so the app sees the drag too.
                 moveCursorToScreenPoint(e2.getX(), e2.getY());
             }
             return true;
