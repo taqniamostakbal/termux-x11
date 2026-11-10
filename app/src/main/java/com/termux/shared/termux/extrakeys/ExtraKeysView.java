@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -274,6 +275,18 @@ public final class ExtraKeysView extends GridLayout {
         return d;
     }
 
+    /** Mudif P18.3.1: tint a key icon (foreground drawable) so it stays
+     *  visible. The icon drawables are white vectors (designed for the old
+     *  dark keys); on the light P18.3 card they must be dark, and on the
+     *  purple pressed card they must be white. Callers pass the same color
+     *  as the text so icon and label always match. No-op on text-only keys. */
+    private void tintKeyIcon(Button button, int color) {
+        Drawable fg = button.getForeground();
+        if (fg != null) {
+            fg.mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+    }
+
     /** Mudif P18.3: restore a key's look after a press. A held special key
      *  (CTRL/ALT/...) keeps the purple active look; a normal key returns
      *  to the light card look. */
@@ -285,6 +298,7 @@ public final class ExtraKeysView extends GridLayout {
         }
         button.setBackground(keyBackground(held ? mButtonActiveBackgroundColor : mButtonBackgroundColor));
         button.setTextColor(held ? mButtonActiveTextColor : mButtonTextColor);
+        tintKeyIcon(button, held ? mButtonActiveTextColor : mButtonTextColor);
     }
 
     /** Set {@link #mLongPressTimeout}. */
@@ -354,6 +368,7 @@ public final class ExtraKeysView extends GridLayout {
                 if (!setIcon(button, buttonInfo.key))
                     button.setText(buttonInfo.display);
                 button.setTextColor(mButtonTextColor);
+                tintKeyIcon(button, mButtonTextColor);
                 button.setAllCaps(true);
                 button.setPadding(0, 0, 0, 0);
 
@@ -368,6 +383,7 @@ public final class ExtraKeysView extends GridLayout {
                             // Mudif P18.3: pressed key = purple card + white text.
                             view.setBackground(keyBackground(mButtonActiveBackgroundColor));
                             button.setTextColor(mButtonActiveTextColor);
+                            tintKeyIcon(button, mButtonActiveTextColor);
                             // Start long press scheduled executors which will be stopped in next MotionEvent
                             startScheduledExecutors(view, buttonInfo, button);
                             return true;
@@ -383,6 +399,7 @@ public final class ExtraKeysView extends GridLayout {
                                 if (mPopupWindow != null && event.getY() > 0) {
                                     view.setBackground(keyBackground(mButtonActiveBackgroundColor));
                                     button.setTextColor(mButtonActiveTextColor);
+                                    tintKeyIcon(button, mButtonActiveTextColor);
                                     dismissPopup();
                                 }
                             }
@@ -545,6 +562,7 @@ public final class ExtraKeysView extends GridLayout {
         // Mudif P18.3: popup key = purple card + white text.
         button.setBackground(keyBackground(mButtonActiveBackgroundColor));
         button.setTextColor(mButtonActiveTextColor);
+        tintKeyIcon(button, mButtonActiveTextColor);
         mPopupWindow = new PopupWindow(this);
         mPopupWindow.setWidth(LayoutParams.WRAP_CONTENT);
         mPopupWindow.setHeight(LayoutParams.WRAP_CONTENT);
