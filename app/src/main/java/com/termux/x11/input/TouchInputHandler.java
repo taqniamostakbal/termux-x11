@@ -333,6 +333,24 @@ public class TouchInputHandler {
             else
                 mInputStrategy.onMotionEvent(event);
 
+            // Mudif P18.5: raw drag path. In SIMULATED_TOUCH the cursor must follow
+            // the finger like a phone touchscreen: move it straight from the raw
+            // ACTION_MOVE, instead of waiting for GestureDetector.onScroll, which
+            // only fires after the touch slop is exceeded and delivers batched
+            // deltas. The detectors below still see every event, so taps,
+            // long-press, 2-finger scroll and 3-finger swipe are unchanged; the
+            // duplicate move from onScroll is a no-op because
+            // RenderData.setCursorPosition only reports a change when the
+            // position actually moved. Gated to a single pointer and to
+            // !mSuppressCursorMovement so a 2-finger scroll / 3-finger swipe
+            // never moves the cursor.
+            if (mInputStrategy instanceof InputStrategyInterface.SimulatedTouchInputStrategy
+                    && event.getActionMasked() == MotionEvent.ACTION_MOVE
+                    && event.getPointerCount() == 1
+                    && !mSuppressCursorMovement) {
+                moveCursorToScreenPoint(event.getX(), event.getY());
+            }
+
             // Avoid short-circuit logic evaluation - ensure all gesture detectors see all events so
             // that they generate correct notifications.
             mScroller.onTouchEvent(event);
