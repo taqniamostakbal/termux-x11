@@ -135,7 +135,6 @@
                 android:background="@drawable/mouse_buttons"
                 android:src="@drawable/ic_mouse_left"
                 android:contentDescription="Left click"
-                android:selected="true"
                 tools:ignore="HardcodedText,PxUsage,SmallSp" />
 
             <ImageButton
