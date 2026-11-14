@@ -198,17 +198,15 @@ public class MainActivity extends AppCompatActivity {
         // by the app before launch was never applied.
         mInputHandler.reloadPreferences(prefs);
 
+        // p30 (Mudif): BACK exits the viewer to the Mudif app (finish),
+        // like the exit button. It used to forward BACK to the X
+        // desktop, so BACK never left the viewer. On Android 13+ this
+        // callback is the operative BACK path (the dispatcher
+        // intercepts BACK before dispatchKeyEvent/onBackPressed).
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
                 OnBackInvokedDispatcher.PRIORITY_DEFAULT,
-                () -> {
-                    if (mInputHandler != null) {
-                        KeyEvent down = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
-                        KeyEvent up = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
-                        mInputHandler.sendKeyEvent(down);
-                        mInputHandler.sendKeyEvent(up);
-                    }
-                }
+                () -> finish()
             );
         }
 
@@ -833,16 +831,24 @@ public class MainActivity extends AppCompatActivity {
         ((FrameLayout) findViewById(android.R.id.content)).getChildAt(0).setFitsSystemWindows(!fullscreen);
     }
 
+    // p30 (Mudif): BACK exits the viewer (finish), it is not forwarded
+    // to the X desktop. Only the DOWN event finishes; the UP that
+    // follows is consumed too.
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && mInputHandler != null) {
-            return mInputHandler.sendKeyEvent(event);
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                finish();
+            }
+            return true;
         }
         return super.dispatchKeyEvent(event);
     }
 
+    // p30 (Mudif): BACK exits the viewer. Was empty (BACK swallowed).
     @Override
     public void onBackPressed() {
+        finish();
     }
 
     public static boolean hasPipPermission(@NonNull Context context) {
