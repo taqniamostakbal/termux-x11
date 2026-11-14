@@ -417,9 +417,17 @@ public class MainActivity extends AppCompatActivity {
         makeSureHelpersAreVisibleAndInScreenBounds();
     }
 
+    // Mudif: the one-mouse bar is the click helper in simulated-touch mode
+    // too, and the stylus-override switch is its on-switch on phones, so
+    // either pref enables it. The old touchMode "1" (trackpad) gate hid
+    // the bar on Mudif, which runs touchMode "2".
+    private boolean isMouseHelperEnabled() {
+        return prefs.showMouseHelper.get() || prefs.showStylusClickOverride.get();
+    }
+
     private void showMouseAuxButtons(boolean show) {
         View v = findViewById(R.id.mouse_buttons);
-        v.setVisibility((LorieView.connected() && show && "1".equals(prefs.touchMode.get())) ? View.VISIBLE : View.GONE);
+        v.setVisibility((LorieView.connected() && show) ? View.VISIBLE : View.GONE);
         v.setAlpha(isInPictureInPictureMode ? 0.f : 0.7f);
         makeSureHelpersAreVisibleAndInScreenBounds();
     }
@@ -447,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout primaryLayer = findViewById(R.id.mouse_buttons);
         LinearLayout secondaryLayer = findViewById(R.id.mouse_buttons_secondary_layer);
 
-        boolean mouseHelperEnabled = prefs.showMouseHelper.get() && "1".equals(prefs.touchMode.get());
+        boolean mouseHelperEnabled = isMouseHelperEnabled();
         primaryLayer.setVisibility(mouseHelperEnabled ? View.VISIBLE : View.GONE);
 
         pos.setOnClickListener((v) -> {
@@ -631,8 +639,8 @@ public class MainActivity extends AppCompatActivity {
         useTermuxEKBarBehaviour = prefs.useTermuxEKBarBehaviour.get();
         showIMEWhileExternalConnected = prefs.showIMEWhileExternalConnected.get();
 
-        findViewById(R.id.mouse_buttons).setVisibility(prefs.showMouseHelper.get() && "1".equals(prefs.touchMode.get()) && LorieView.connected() ? View.VISIBLE : View.GONE);
-        showMouseAuxButtons(prefs.showMouseHelper.get());
+        findViewById(R.id.mouse_buttons).setVisibility(isMouseHelperEnabled() && LorieView.connected() ? View.VISIBLE : View.GONE);
+        showMouseAuxButtons(isMouseHelperEnabled());
         showStylusAuxButtons(prefs.showStylusClickOverride.get());
 
         getTerminalToolbarViewPager().setAlpha(isInPictureInPictureMode ? 0.f : ((float) prefs.opacityEKBar.get())/100);
@@ -911,7 +919,7 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(()-> {
             boolean connected = LorieView.connected();
             setTerminalToolbarView();
-            findViewById(R.id.mouse_buttons).setVisibility(prefs.showMouseHelper.get() && "1".equals(prefs.touchMode.get()) && connected ? View.VISIBLE : View.GONE);
+            findViewById(R.id.mouse_buttons).setVisibility(isMouseHelperEnabled() && connected ? View.VISIBLE : View.GONE);
             findViewById(R.id.stub).setVisibility(connected?View.INVISIBLE:View.VISIBLE);
             getLorieView().setVisibility(connected?View.VISIBLE:View.INVISIBLE);
 
