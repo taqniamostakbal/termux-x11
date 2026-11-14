@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mudif gear (v2): the bar's settings button, restyled in the same
+     purple glassy language as the mouse bar. A real cog: toothed ring
+     plus center dot, white on the dark glass, turning purple while
+     pressed (the mouse_buttons selector behind it). The button it sits
+     on still does exactly what the old gear did: tap flips the bar
+     between horizontal and vertical, drag moves the bar (hunk E notes
+     the two behaviors; the icon is its identity as Anas sees it). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Ring: stroked circle, the cog body. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.4"
+        android:pathData="M12,6 a6,6 0,1 0,0 12 a6,6 0,1 0,0 -12 Z" />
+    <!-- Eight teeth, one rect per group rotated around the center. -->
+    <group android:rotation="0" android:pivotX="12" android:pivotY="12">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.7,1.8 h2.6 v3.6 h-2.6 Z" />
+    </group>
+    <group android:rotation="45" android:pivotX="12" android:pivotY="12">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.7,1.8 h2.6 v3.6 h-2.6 Z" />
+    </group>
+    <group android:rotation="90" android:pivotX="12" android:pivotY="12">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.7,1.8 h2.6 v3.6 h-2.6 Z" />
+    </group>
+    <group android:rotation="135" android:pivotX="12" android:pivotY="12">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.7,1.8 h2.6 v3.6 h-2.6 Z" />
+    </group>
+    <group android:rotation="180" android:pivotX="12" android:pivotY="12">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.7,1.8 h2.6 v3.6 h-2.6 Z" />
+    </group>
+    <group android:rotation="225" android:pivotX="12" android:pivotY="12">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.7,1.8 h2.6 v3.6 h-2.6 Z" />
+    </group>
+    <group android:rotation="270" android:pivotX="12" android:pivotY="12">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.7,1.8 h2.6 v3.6 h-2.6 Z" />
+    </group>
+    <group android:rotation="315" android:pivotX="12" android:pivotY="12">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M10.7,1.8 h2.6 v3.6 h-2.6 Z" />
+    </group>
+    <!-- Center dot. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,10 a2,2 0,1 0,0 4 a2,2 0,1 0,0 -4 Z" />
+</vector>

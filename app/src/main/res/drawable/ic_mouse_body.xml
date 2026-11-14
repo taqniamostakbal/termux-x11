@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mudif mouse bar, v2 (2026-11-14, Anas: a REAL mouse, not three mice).
+     ONE mouse body seen from above, wide oval, nose at the top edge:
+     left half of the front is left click, the scroll wheel sits on the
+     center line, right half of the front is right click. The three
+     ImageButtons over it are transparent zones; their pressed state
+     (drawable-mouse_buttons.xml, semi-transparent purple) lights the
+     zone without hiding the white outline or the wheel.
+     Viewport 188x60 matches the container exactly (three 56dp buttons
+     plus 2dp margins plus 4dp padding: 188 wide, 60 tall), so the
+     vector background is not stretched. The vertical twin of this file
+     is ic_mouse_body_vertical.xml (swapped by the gear tap, hunk E). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="188dp"
+    android:height="60dp"
+    android:viewportWidth="188"
+    android:viewportHeight="60">
+    <!-- Body: wide oval, glass black 70 percent, white edge at 45 percent
+         (strong enough to read as a mouse body over any wallpaper). -->
+    <path
+        android:fillColor="#B3000000"
+        android:strokeColor="#73FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M34,4 H154 C172,4 184,16 184,30 C184,44 172,56 154,56 H34 C16,56 4,44 4,30 C4,16 16,4 34,4 Z" />
+    <!-- Center split: left and right button divider, nose to wheel. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeAlpha="0.7"
+        android:pathData="M94,4 V34" />
+    <!-- Scroll wheel: white rounded rect on the center line. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.95"
+        android:pathData="M89,9 h10 a5,5 0,0 1 5,5 v2 a5,5 0,0 1 -5,5 h-10 a5,5 0,0 1 -5,-5 v-2 a5,5 0,0 1 5,-5 Z" />
+    <!-- Wheel grip: one dark line across the wheel. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#B3000000"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M89,15 H99" />
+</vector>

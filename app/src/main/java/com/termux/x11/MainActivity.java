@@ -48,7 +48,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -284,12 +283,10 @@ public class MainActivity extends AppCompatActivity {
     private void initStylusAuxButtons() {
         final ViewPager pager = getTerminalToolbarViewPager();
         boolean stylusMenuEnabled = prefs.showStylusClickOverride.get() && LorieView.connected();
-        final float menuUnselectedTrasparency = 0.66f;
-        final float menuSelectedTrasparency = 1.0f;
-        Button left = findViewById(R.id.button_left_click);
-        Button right = findViewById(R.id.button_right_click);
-        Button middle = findViewById(R.id.button_middle_click);
-        Button visibility = findViewById(R.id.button_visibility);
+        ImageButton left = findViewById(R.id.button_left_click);
+        ImageButton right = findViewById(R.id.button_right_click);
+        ImageButton middle = findViewById(R.id.button_middle_click);
+        ImageButton visibility = findViewById(R.id.button_visibility);
         LinearLayout overlay = findViewById(R.id.mouse_helper_visibility);
         LinearLayout buttons = findViewById(R.id.mouse_helper_secondary_layer);
         overlay.setOnTouchListener((v, e) -> true);
@@ -297,12 +294,19 @@ public class MainActivity extends AppCompatActivity {
         overlay.setOnGenericMotionListener((v, e) -> true);
         overlay.setOnCapturedPointerListener((v, e) -> true);
         overlay.setVisibility(stylusMenuEnabled ? View.VISIBLE : View.GONE);
+        // Selected mode: purple segment (state_selected background) and full
+        // white icon. Unselected: transparent segment, icon at 70 percent
+        // (178 of 255). The old code dimmed the whole Button with alpha.
         View.OnClickListener listener = view -> {
             TouchInputHandler.STYLUS_INPUT_HELPER_MODE = (view.equals(left) ? 1 : (view.equals(middle) ? 2 : (view.equals(right) ? 4 : 0)));
-            left.setAlpha((TouchInputHandler.STYLUS_INPUT_HELPER_MODE == 1) ? menuSelectedTrasparency : menuUnselectedTrasparency);
-            middle.setAlpha((TouchInputHandler.STYLUS_INPUT_HELPER_MODE == 2) ? menuSelectedTrasparency : menuUnselectedTrasparency);
-            right.setAlpha((TouchInputHandler.STYLUS_INPUT_HELPER_MODE == 4) ? menuSelectedTrasparency : menuUnselectedTrasparency);
-            visibility.setAlpha(menuUnselectedTrasparency);
+            int m = TouchInputHandler.STYLUS_INPUT_HELPER_MODE;
+            left.setSelected(m == 1);
+            middle.setSelected(m == 2);
+            right.setSelected(m == 4);
+            left.setImageAlpha(m == 1 ? 255 : 178);
+            middle.setImageAlpha(m == 2 ? 255 : 178);
+            right.setImageAlpha(m == 4 ? 255 : 178);
+            visibility.setSelected(false);
         };
 
         left.setOnClickListener(listener);
@@ -312,13 +316,11 @@ public class MainActivity extends AppCompatActivity {
         visibility.setOnClickListener(view -> {
             if (buttons.getVisibility() == View.VISIBLE) {
                 buttons.setVisibility(View.GONE);
-                visibility.setAlpha(menuUnselectedTrasparency);
                 int m = TouchInputHandler.STYLUS_INPUT_HELPER_MODE;
-                visibility.setText(m == 1 ? "L" : (m == 2 ? "M" : (m == 3 ? "R" : "U")));
+                visibility.setImageResource(m == 1 ? R.drawable.ic_mouse_left : (m == 2 ? R.drawable.ic_mouse_middle : (m == 4 ? R.drawable.ic_mouse_right : R.drawable.ic_mouse)));
             } else {
                 buttons.setVisibility(View.VISIBLE);
-                visibility.setAlpha(menuUnselectedTrasparency);
-                visibility.setText("X");
+                visibility.setImageResource(R.drawable.ic_close);
 
                 //Calculate screen border making sure btn is fully inside the view
                 float maxX = frm.getWidth() - 4 * left.getWidth();
@@ -331,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
                 overlay.setY(MathUtils.clamp(overlay.getY(), 0, maxY));
 
                 int m = TouchInputHandler.STYLUS_INPUT_HELPER_MODE;
-                listener.onClick(m == 1 ? left : (m == 2 ? middle : (m == 3 ? right : left)));
+                listener.onClick(m == 1 ? left : (m == 2 ? middle : (m == 4 ? right : left)));
             }
         });
         //Simulated mouse click 1 = left , 2 = middle , 3 = right
@@ -381,12 +383,18 @@ public class MainActivity extends AppCompatActivity {
         } else {
             //Reset default input back to normal
             TouchInputHandler.STYLUS_INPUT_HELPER_MODE = 1;
-            final float menuUnselectedTrasparency = 0.66f;
-            final float menuSelectedTrasparency = 1.0f;
-            findViewById(R.id.button_left_click).setAlpha(menuSelectedTrasparency);
-            findViewById(R.id.button_right_click).setAlpha(menuUnselectedTrasparency);
-            findViewById(R.id.button_middle_click).setAlpha(menuUnselectedTrasparency);
-            findViewById(R.id.button_visibility).setAlpha(menuUnselectedTrasparency);
+            ImageButton left = findViewById(R.id.button_left_click);
+            ImageButton middle = findViewById(R.id.button_middle_click);
+            ImageButton right = findViewById(R.id.button_right_click);
+            ImageButton visibility = findViewById(R.id.button_visibility);
+            left.setSelected(true);
+            middle.setSelected(false);
+            right.setSelected(false);
+            left.setImageAlpha(255);
+            middle.setImageAlpha(178);
+            right.setImageAlpha(178);
+            visibility.setSelected(false);
+            visibility.setImageResource(R.drawable.ic_mouse_left);
             buttons.setVisibility(View.GONE);
         }
     }
@@ -432,9 +440,9 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     void initMouseAuxButtons() {
         final ViewPager pager = getTerminalToolbarViewPager();
-        Button left = findViewById(R.id.mouse_button_left_click);
-        Button right = findViewById(R.id.mouse_button_right_click);
-        Button middle = findViewById(R.id.mouse_button_middle_click);
+        ImageButton left = findViewById(R.id.mouse_button_left_click);
+        ImageButton right = findViewById(R.id.mouse_button_right_click);
+        ImageButton middle = findViewById(R.id.mouse_button_middle_click);
         ImageButton pos = findViewById(R.id.mouse_buttons_position);
         LinearLayout primaryLayer = findViewById(R.id.mouse_buttons);
         LinearLayout secondaryLayer = findViewById(R.id.mouse_buttons_secondary_layer);
@@ -447,10 +455,12 @@ public class MainActivity extends AppCompatActivity {
                 setSize(left, 48, 96);
                 setSize(right, 48, 96);
                 secondaryLayer.setOrientation(LinearLayout.VERTICAL);
+                primaryLayer.setBackgroundResource(R.drawable.ic_mouse_body_vertical);
             } else {
                 setSize(left, 96, 48);
                 setSize(right, 96, 48);
                 secondaryLayer.setOrientation(LinearLayout.HORIZONTAL);
+                primaryLayer.setBackgroundResource(R.drawable.ic_mouse_body);
             }
             handler.postDelayed(() -> {
                 float maxX = frm.getX() + frm.getWidth() - primaryLayer.getWidth();
