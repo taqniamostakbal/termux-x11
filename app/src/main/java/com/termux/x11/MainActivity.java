@@ -1,6 +1,5 @@
 package com.termux.x11;
 
-import static android.Manifest.permission.WRITE_SECURE_SETTINGS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.view.KeyEvent.*;
@@ -67,8 +66,6 @@ import com.termux.x11.utils.TermuxX11ExtraKeys;
 import com.termux.x11.utils.X11ToolbarViewPager;
 
 import java.util.Map;
-
-import me.weishu.reflection.Reflection;
 
 @SuppressLint("ApplySharedPref")
 @SuppressWarnings({"deprecation", "unused"})
@@ -626,10 +623,12 @@ public class MainActivity extends AppCompatActivity {
         lorieView.triggerCallback();
 
         filterOutWinKey = prefs.filterOutWinkey.get();
+        // Mudif p67: launch() is passive now, it only notices a service
+        // the user enabled by hand. No WRITE_SECURE_SETTINGS check here,
+        // and no shutdown on pref-off: the service is the user's own
+        // manual choice, the viewer never disables it behind his back.
         if (prefs.enableAccessibilityServiceAutomatically.get())
             KeyInterceptor.launch(this);
-        else if (checkSelfPermission(WRITE_SECURE_SETTINGS) == PERMISSION_GRANTED)
-            KeyInterceptor.shutdown(true);
 
         useTermuxEKBarBehaviour = prefs.useTermuxEKBarBehaviour.get();
         showIMEWhileExternalConnected = prefs.showIMEWhileExternalConnected.get();

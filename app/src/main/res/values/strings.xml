@@ -82,8 +82,8 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <string name="lorie_pref_dexMetaKeyCapture_summary">Samsung Dex only. Allows interception of &quot;Alt+F4&quot;, &quot;Meta+D&quot;, &quot;Meta+E&quot;, etc.</string>
     <string name="lorie_pref_enableAccessibilityService">Enable Accessibility service for intercepting system shortcuts manually.</string>
     <string name="lorie_pref_enableAccessibilityService_summary">Open Accessibility settings.</string>
-    <string name="lorie_pref_enableAccessibilityServiceAutomatically">Enable Accessibility service for intercepting system shortcuts automatically.</string>
-    <string name="lorie_pref_enableAccessibilityServiceAutomatically_summary">Requires WRITE_SECURE_SETTINGS permission.</string>
+    <string name="lorie_pref_enableAccessibilityServiceAutomatically">Enable the Accessibility service to intercept system shortcuts.</string>
+    <string name="lorie_pref_enableAccessibilityServiceAutomatically_summary">Enable it by hand in Android Settings > Accessibility.</string>
     <string name="lorie_pref_pauseKeyInterceptingWithEsc">Pause key intercepting with Esc key</string>
     <string name="lorie_pref_filterOutWinkey">Filter out intercepted Win (Meta/Mod4) key.</string>
     <string name="lorie_pref_filterOutWinkey_summary">Allows you to use Dex shortcuts while intercepting. Requires Accessibility service to work.</string>
@@ -166,6 +166,7 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <!-- Toast and dialog messages -->
     <string name="lorie_toast_copied_to_clipboard">Copied to clipboard</string>
     <string name="lorie_toast_wrong_resolution_format">Wrong resolution format</string>
+    <string name="lorie_toast_accessibility_manual">Enable Termux:X11 in Android Settings > Accessibility to intercept system shortcuts.</string>
     <string name="lorie_dialog_permission_denied_title">Permission denied</string>
     <string name="lorie_dialog_permission_denied_message">Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\nPlease, launch this command using ADB:\nadb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="lorie_error_native_library_load">Failed to load native library. Did you install the right apk? Try the universal one.</string>

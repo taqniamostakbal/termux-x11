@@ -1,9 +1,7 @@
 package com.termux.x11;
 
 import static android.Manifest.permission.POST_NOTIFICATIONS;
-import static android.Manifest.permission.WRITE_SECURE_SETTINGS;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.system.Os.getuid;
 
@@ -41,7 +39,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceDataStore;
@@ -69,8 +66,6 @@ import com.termux.x11.utils.KeyInterceptor;
 import com.termux.x11.utils.SamsungDexUtils;
 import com.termux.x11.utils.TermuxX11ExtraKeys;
 
-import java.io.StringWriter;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -460,16 +455,16 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
             if ("enableAccessibilityServiceAutomatically".contentEquals(key)) {
                 if (!((Boolean) newValue))
                     KeyInterceptor.shutdown(false);
-                if (requireContext().checkSelfPermission(WRITE_SECURE_SETTINGS) != PERMISSION_GRANTED) {
-                    new AlertDialog.Builder(requireContext())
-                            .setTitle("Permission denied")
-                            .setMessage("Android requires WRITE_SECURE_SETTINGS permission to start accessibility service automatically.\n" +
-                                    "Please, launch this command using ADB:\n" +
-                                    "adb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS")
-                            .setNegativeButton("OK", null)
-                            .create()
-                            .show();
-                    return false;
+                else if (!KeyInterceptor.isLaunched()) {
+                    // Mudif p67: no WRITE_SECURE_SETTINGS check, no ADB
+                    // dialog. The service is enabled by hand in Android
+                    // Settings > Accessibility, a normal user action.
+                    // Open that screen once and tell the user what to
+                    // enable there; the pref stays true so the viewer
+                    // remembers the request. The viewer works without
+                    // the service; it only adds hardware-key capture.
+                    requireContext().startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+                    Toast.makeText(requireContext(), R.string.lorie_toast_accessibility_manual, Toast.LENGTH_LONG).show();
                 }
             }
             
@@ -582,15 +577,15 @@ public class LoriePreferences extends AppCompatActivity implements PreferenceFra
                                 break;
                             }
                             case "enableAccessibilityServiceAutomatically": {
+                                // Mudif p67: the permission gate is gone.
+                                // Setting this pref no longer writes a
+                                // secure setting anywhere (launch() is
+                                // passive now), so there is nothing to
+                                // gate. A remote caller can only flip a
+                                // boolean; the service itself is enabled
+                                // by the user in system settings.
                                 if (!"true".equals(newValue))
                                     KeyInterceptor.shutdown(false);
-                                else if (context.checkSelfPermission(WRITE_SECURE_SETTINGS) != PERMISSION_GRANTED) {
-                                    sendResponse(remote, 1, 1, "Permission denied.\n" +
-                                            "Android requires WRITE_SECURE_SETTINGS permission to change `enableAccessibilityServiceAutomatically` setting.\n" +
-                                            "Please, launch this command using ADB:\n" +
-                                            "adb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS");
-                                    return;
-                                }
 
                                 edit.putBoolean("enableAccessibilityServiceAutomatically", "true".contentEquals(newValue));
                                 break;
