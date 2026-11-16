@@ -436,14 +436,6 @@ public class MainActivity extends AppCompatActivity {
         showMouseAuxButtons(findViewById(R.id.mouse_buttons).getVisibility() != View.VISIBLE);
     }
 
-    void setSize(View v, int width, int height) {
-        ViewGroup.LayoutParams p = v.getLayoutParams();
-        p.width = (int) (width * getResources().getDisplayMetrics().density);
-        p.height = (int) (height * getResources().getDisplayMetrics().density);
-        v.setLayoutParams(p);
-        v.setMinimumWidth((int) (width * getResources().getDisplayMetrics().density));
-        v.setMinimumHeight((int) (height * getResources().getDisplayMetrics().density));
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     void initMouseAuxButtons() {
@@ -453,23 +445,18 @@ public class MainActivity extends AppCompatActivity {
         ImageButton middle = findViewById(R.id.mouse_button_middle_click);
         ImageButton pos = findViewById(R.id.mouse_buttons_position);
         LinearLayout primaryLayer = findViewById(R.id.mouse_buttons);
-        LinearLayout secondaryLayer = findViewById(R.id.mouse_buttons_secondary_layer);
 
         boolean mouseHelperEnabled = isMouseHelperEnabled();
         primaryLayer.setVisibility(mouseHelperEnabled ? View.VISIBLE : View.GONE);
 
+        // Mudif p58: the gear opens the real viewer settings. It used to
+        // flip the bar horizontal/vertical, and the flip resized L/R to
+        // 96dp, so the bar grew wider after one tap: that growth is the
+        // giant panel in Anas's screenshot. The flip is gone, the bar is
+        // a fixed 164dp, and the intent below is the exact one the
+        // not-connected screen already uses for its preferences button.
         pos.setOnClickListener((v) -> {
-            if (secondaryLayer.getOrientation() == LinearLayout.HORIZONTAL) {
-                setSize(left, 48, 96);
-                setSize(right, 48, 96);
-                secondaryLayer.setOrientation(LinearLayout.VERTICAL);
-                primaryLayer.setBackgroundResource(R.drawable.ic_mouse_body_vertical);
-            } else {
-                setSize(left, 96, 48);
-                setSize(right, 96, 48);
-                secondaryLayer.setOrientation(LinearLayout.HORIZONTAL);
-                primaryLayer.setBackgroundResource(R.drawable.ic_mouse_body);
-            }
+            startActivity(new Intent(this, LoriePreferences.class) {{ setAction(Intent.ACTION_MAIN); }});
             handler.postDelayed(() -> {
                 float maxX = frm.getX() + frm.getWidth() - primaryLayer.getWidth();
                 float maxY = frm.getY() + frm.getHeight() - primaryLayer.getHeight();

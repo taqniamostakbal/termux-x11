@@ -167,6 +167,12 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Mudif p58: compact one-mouse bar, fixed size. The bar was 188dp
+         wide and grew to ~268dp after one gear tap (the flip resized L/R
+         to 96dp), which is the giant panel in Anas's screenshot. Now the
+         three click zones are 48dp (the accessibility minimum touch
+         target), so the bar is 164dp wide forever, and the gear opens the
+         real viewer settings instead of flipping the bar. No id renamed. -->
     <LinearLayout
         android:id="@+id/mouse_buttons"
         android:layout_width="wrap_content"
@@ -187,7 +193,7 @@
 
             <ImageButton
                 android:id="@+id/mouse_button_left_click"
-                android:layout_width="56dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
@@ -200,7 +206,7 @@
 
             <ImageButton
                 android:id="@+id/mouse_button_middle_click"
-                android:layout_width="56dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
@@ -213,7 +219,7 @@
 
             <ImageButton
                 android:id="@+id/mouse_button_right_click"
-                android:layout_width="56dp"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
@@ -227,15 +233,15 @@
 
         <ImageButton
             android:id="@+id/mouse_buttons_position"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:layout_marginTop="8dp"
-            android:padding="10dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:minWidth="40dp"
+            android:minHeight="40dp"
+            android:layout_marginTop="6dp"
+            android:padding="8dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_gear"
-            android:contentDescription="Move or rotate mouse bar"
+            android:contentDescription="Viewer settings"
             android:layout_gravity="center"
             android:background="@drawable/mouse_buttons"
             tools:ignore="HardcodedText,PxUsage,SmallSp" />

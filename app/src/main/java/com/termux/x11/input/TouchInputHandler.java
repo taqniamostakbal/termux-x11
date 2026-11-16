@@ -135,6 +135,13 @@ public class TouchInputHandler {
      * is performing a drag operation.
      */
     private boolean mIsDragging;
+
+    /**
+     * Mudif p58: last raw finger point seen in Trackpad mode, for the
+     * raw drag block (hunk C). Reset on ACTION_DOWN (hunk B).
+     */
+    private float mLastTrackpadRawX;
+    private float mLastTrackpadRawY;
     private static DisplayManager mDisplayManager;
     private static int mDisplayRotation;
     private static final DisplayManager.DisplayListener mDisplayListener = new DisplayManager.DisplayListener() {
@@ -351,6 +358,27 @@ public class TouchInputHandler {
                 moveCursorToScreenPoint(event.getX(), event.getY());
             }
 
+            // Mudif p58: raw drag path for TRACKPAD. Same slop problem as
+            // the Simulated block above, same fix, opposite direction:
+            // Trackpad motion is relative, so the raw delta goes through
+            // moveCursorByOffset with the onScroll sign convention
+            // (last point minus current point). The first pixel of a drag
+            // now moves the cursor; before, the first ~8dp moved nothing.
+            // The onScroll Trackpad branch is deleted in hunk D, so a
+            // move is never applied twice: the raw block owns every
+            // 1-pointer Trackpad move, and onScroll only sees 2-finger
+            // scroll / 3-finger swipe from here on. The guards match
+            // onScroll's own early return (1 pointer, !suppress), so no
+            // move is lost and none is doubled.
+            if (mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy
+                    && event.getActionMasked() == MotionEvent.ACTION_MOVE
+                    && event.getPointerCount() == 1
+                    && !mSuppressCursorMovement) {
+                moveCursorByOffset(mLastTrackpadRawX - event.getX(), mLastTrackpadRawY - event.getY());
+                mLastTrackpadRawX = event.getX();
+                mLastTrackpadRawY = event.getY();
+            }
+
             // Avoid short-circuit logic evaluation - ensure all gesture detectors see all events so
             // that they generate correct notifications.
             mScroller.onTouchEvent(event);
@@ -370,6 +398,8 @@ public class TouchInputHandler {
                     mSuppressCursorMovement = false;
                     mSwipeCompleted = false;
                     mIsDragging = false;
+                    mLastTrackpadRawX = event.getX();
+                    mLastTrackpadRawY = event.getY();
                     break;
 
                 case MotionEvent.ACTION_SCROLL:
@@ -668,13 +698,10 @@ public class TouchInputHandler {
             if (pointerCount != 1 || mSuppressCursorMovement)
                 return false;
 
-            if (mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy) {
-                if (mInjector.scaleTouchpad) {
-                    distanceX *= mRenderData.scale.x;
-                    distanceY *= mRenderData.scale.y;
-                }
-                moveCursorByOffset(distanceX, distanceY);
-            }
+            // Mudif p58: deleted. Trackpad moves come from the raw block
+            // in onTouchEvent (hunk C) now, on the first pixel instead of
+            // after the touch slop. Leaving this call in would move the
+            // cursor twice for every drag.
             if (!(mInputStrategy instanceof InputStrategyInterface.TrackpadInputStrategy) && (mIsDragging || mInputStrategy instanceof InputStrategyInterface.SimulatedTouchInputStrategy)) {
                 // Ensure the cursor follows the user's finger when the user is dragging under
                 // direct input mode.
