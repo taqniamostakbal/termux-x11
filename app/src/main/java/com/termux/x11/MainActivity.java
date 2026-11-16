@@ -1,5 +1,6 @@
 package com.termux.x11;
 
+import static android.Manifest.permission.WRITE_SECURE_SETTINGS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.view.KeyEvent.*;
@@ -15,6 +16,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -23,7 +25,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.window.OnBackInvokedDispatcher;
@@ -32,6 +33,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.service.notification.StatusBarNotification;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -66,6 +68,8 @@ import com.termux.x11.utils.TermuxX11ExtraKeys;
 import com.termux.x11.utils.X11ToolbarViewPager;
 
 import java.util.Map;
+
+import me.weishu.reflection.Reflection;
 
 @SuppressLint("ApplySharedPref")
 @SuppressWarnings({"deprecation", "unused"})
@@ -171,9 +175,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_activity);
 
         frm = findViewById(R.id.frame);
-        findViewById(R.id.preferences_button).setOnClickListener((l) -> startActivity(new Intent(this, LoriePreferences.class) {{ setAction(Intent.ACTION_MAIN); }}));
-        findViewById(R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
-        findViewById(R.id.exit_button).setOnClickListener((l) -> finish());
+        // p77 (Mudif): the stub is Mudif's own screen now. The primary
+        // button brings VncActivity forward with EXTRA_START_DESKTOP so
+        // the desktop really starts (VncActivity.onNewIntent runs
+        // startDesktop; a fresh instance auto-starts it in onCreate).
+        // No Termux settings, no Termux GitHub link, no English.
+        findViewById(R.id.mudif_start_button).setOnClickListener((l) -> {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.bolm.mudif", "com.bolm.mudif.ui.vnc.VncActivity"));
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.putExtra("start_desktop", true);
+            startActivity(intent);
+        });
+        findViewById(R.id.mudif_back_button).setOnClickListener((l) -> finish());
 
         // Mudif: floating keyboard button — shows/hides the extra-keys
         // bar on demand, so the desktop stays fullscreen until the user
@@ -278,7 +292,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("ClickableViewAccessibility")
     private void initStylusAuxButtons() {
         final ViewPager pager = getTerminalToolbarViewPager();
-        boolean stylusMenuEnabled = prefs.showStylusClickOverride.get() && LorieView.connected();
         ImageButton left = findViewById(R.id.button_left_click);
         ImageButton right = findViewById(R.id.button_right_click);
         ImageButton middle = findViewById(R.id.button_middle_click);
@@ -289,7 +302,10 @@ public class MainActivity extends AppCompatActivity {
         overlay.setOnHoverListener((v, e) -> true);
         overlay.setOnGenericMotionListener((v, e) -> true);
         overlay.setOnCapturedPointerListener((v, e) -> true);
-        overlay.setVisibility(stylusMenuEnabled ? View.VISIBLE : View.GONE);
+        // p77: the stylus click-mode bar duplicates the bottom mouse bar,
+        // so it stays hidden unconditionally. The pref is left alone:
+        // the bottom bar still needs it (isMouseHelperEnabled).
+        overlay.setVisibility(View.GONE);
         // Selected mode: purple segment (state_selected background) and full
         // white icon. Unselected: transparent segment, icon at 70 percent
         // (178 of 255). The old code dimmed the whole Button with alpha.
@@ -371,28 +387,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // p77: the stylus click-mode bar duplicates the bottom mouse bar,
+    // so it is never shown. `show` is ignored; the reset below always
+    // runs, so stylus taps keep acting as left-click (mode 1).
     private void showStylusAuxButtons(boolean show) {
         LinearLayout buttons = findViewById(R.id.mouse_helper_visibility);
-        if (LorieView.connected() && show) {
-            buttons.setVisibility(View.VISIBLE);
-            buttons.setAlpha(isInPictureInPictureMode ? 0.f : 1.f);
-        } else {
-            //Reset default input back to normal
-            TouchInputHandler.STYLUS_INPUT_HELPER_MODE = 1;
-            ImageButton left = findViewById(R.id.button_left_click);
-            ImageButton middle = findViewById(R.id.button_middle_click);
-            ImageButton right = findViewById(R.id.button_right_click);
-            ImageButton visibility = findViewById(R.id.button_visibility);
-            left.setSelected(true);
-            middle.setSelected(false);
-            right.setSelected(false);
-            left.setImageAlpha(255);
-            middle.setImageAlpha(178);
-            right.setImageAlpha(178);
-            visibility.setSelected(false);
-            visibility.setImageResource(R.drawable.ic_mouse_left);
-            buttons.setVisibility(View.GONE);
-        }
+        //Reset default input back to normal
+        TouchInputHandler.STYLUS_INPUT_HELPER_MODE = 1;
+        ImageButton left = findViewById(R.id.button_left_click);
+        ImageButton middle = findViewById(R.id.button_middle_click);
+        ImageButton right = findViewById(R.id.button_right_click);
+        ImageButton visibility = findViewById(R.id.button_visibility);
+        left.setSelected(true);
+        middle.setSelected(false);
+        right.setSelected(false);
+        left.setImageAlpha(255);
+        middle.setImageAlpha(178);
+        right.setImageAlpha(178);
+        visibility.setSelected(false);
+        visibility.setImageResource(R.drawable.ic_mouse_left);
+        buttons.setVisibility(View.GONE);
     }
 
     private void makeSureHelpersAreVisibleAndInScreenBounds() {
@@ -421,9 +435,13 @@ public class MainActivity extends AppCompatActivity {
         return prefs.showMouseHelper.get() || prefs.showStylusClickOverride.get();
     }
 
+    // p77: the bottom mouse bar is removed too (Anas: keep only the X
+    // arrow cursor). `show` is ignored; the bar is never shown.
+    // Right/middle-click still work: two/three-finger long-press
+    // (TouchInputHandler.mouseButtonFromPointerCount).
     private void showMouseAuxButtons(boolean show) {
         View v = findViewById(R.id.mouse_buttons);
-        v.setVisibility((LorieView.connected() && show) ? View.VISIBLE : View.GONE);
+        v.setVisibility(View.GONE);
         v.setAlpha(isInPictureInPictureMode ? 0.f : 0.7f);
         makeSureHelpersAreVisibleAndInScreenBounds();
     }
@@ -432,6 +450,14 @@ public class MainActivity extends AppCompatActivity {
         showMouseAuxButtons(findViewById(R.id.mouse_buttons).getVisibility() != View.VISIBLE);
     }
 
+    void setSize(View v, int width, int height) {
+        ViewGroup.LayoutParams p = v.getLayoutParams();
+        p.width = (int) (width * getResources().getDisplayMetrics().density);
+        p.height = (int) (height * getResources().getDisplayMetrics().density);
+        v.setLayoutParams(p);
+        v.setMinimumWidth((int) (width * getResources().getDisplayMetrics().density));
+        v.setMinimumHeight((int) (height * getResources().getDisplayMetrics().density));
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     void initMouseAuxButtons() {
@@ -441,18 +467,24 @@ public class MainActivity extends AppCompatActivity {
         ImageButton middle = findViewById(R.id.mouse_button_middle_click);
         ImageButton pos = findViewById(R.id.mouse_buttons_position);
         LinearLayout primaryLayer = findViewById(R.id.mouse_buttons);
+        LinearLayout secondaryLayer = findViewById(R.id.mouse_buttons_secondary_layer);
 
-        boolean mouseHelperEnabled = isMouseHelperEnabled();
-        primaryLayer.setVisibility(mouseHelperEnabled ? View.VISIBLE : View.GONE);
+        // p77: the bottom mouse bar is removed (Anas: keep only the X
+        // arrow cursor). The pref is left alone; nothing shows the bar.
+        primaryLayer.setVisibility(View.GONE);
 
-        // Mudif p58: the gear opens the real viewer settings. It used to
-        // flip the bar horizontal/vertical, and the flip resized L/R to
-        // 96dp, so the bar grew wider after one tap: that growth is the
-        // giant panel in Anas's screenshot. The flip is gone, the bar is
-        // a fixed 164dp, and the intent below is the exact one the
-        // not-connected screen already uses for its preferences button.
         pos.setOnClickListener((v) -> {
-            startActivity(new Intent(this, LoriePreferences.class) {{ setAction(Intent.ACTION_MAIN); }});
+            if (secondaryLayer.getOrientation() == LinearLayout.HORIZONTAL) {
+                setSize(left, 48, 96);
+                setSize(right, 48, 96);
+                secondaryLayer.setOrientation(LinearLayout.VERTICAL);
+                primaryLayer.setBackgroundResource(R.drawable.ic_mouse_body_vertical);
+            } else {
+                setSize(left, 96, 48);
+                setSize(right, 96, 48);
+                secondaryLayer.setOrientation(LinearLayout.HORIZONTAL);
+                primaryLayer.setBackgroundResource(R.drawable.ic_mouse_body);
+            }
             handler.postDelayed(() -> {
                 float maxX = frm.getX() + frm.getWidth() - primaryLayer.getWidth();
                 float maxY = frm.getY() + frm.getHeight() - primaryLayer.getHeight();
@@ -482,8 +514,10 @@ public class MainActivity extends AppCompatActivity {
 
         pos.setOnTouchListener(new View.OnTouchListener() {
             final int touchSlop = (int) Math.pow(ViewConfiguration.get(MainActivity.this).getScaledTouchSlop(), 2);
+            final int tapTimeout = ViewConfiguration.getTapTimeout();
             final float[] startOffset = new float[2];
             final int[] startPosition = new int[2];
+            long startTime;
             @Override
             public boolean onTouch(View v, MotionEvent e) {
                 switch(e.getAction()) {
@@ -491,6 +525,7 @@ public class MainActivity extends AppCompatActivity {
                         primaryLayer.getLocationInWindow(startPosition);
                         startOffset[0] = e.getX();
                         startOffset[1] = e.getY();
+                        startTime = SystemClock.uptimeMillis();
                         pos.setPressed(true);
                         break;
                     case MotionEvent.ACTION_MOVE: {
@@ -513,19 +548,7 @@ public class MainActivity extends AppCompatActivity {
                         int deltaY = (int) (startOffset[1] - e.getY()) + (startPosition[1] - _pos[1]);
                         pos.setPressed(false);
 
-                        // Mudif p62: a tap is DOWN + UP within the touch
-                        // slop, however long it takes. The old code also
-                        // required the tap to finish within 100ms
-                        // (ViewConfiguration.getTapTimeout()), so a normal
-                        // deliberate tap on the gear never fired
-                        // performClick and the gear did nothing at all:
-                        // that is the "nothing works" in Anas's report.
-                        // Android's own tap detection has no time limit,
-                        // only the slop; a drag is told apart by
-                        // movement, not by time. This view is not
-                        // long-clickable, so no long-press gesture is
-                        // lost by dropping the time limit.
-                        if (deltaX * deltaX + deltaY * deltaY < touchSlop) {
+                        if (deltaX * deltaX + deltaY * deltaY < touchSlop && SystemClock.uptimeMillis() - startTime <= tapTimeout) {
                             v.performClick();
                             return true;
                         }
@@ -623,17 +646,16 @@ public class MainActivity extends AppCompatActivity {
         lorieView.triggerCallback();
 
         filterOutWinKey = prefs.filterOutWinkey.get();
-        // Mudif p67: launch() is passive now, it only notices a service
-        // the user enabled by hand. No WRITE_SECURE_SETTINGS check here,
-        // and no shutdown on pref-off: the service is the user's own
-        // manual choice, the viewer never disables it behind his back.
         if (prefs.enableAccessibilityServiceAutomatically.get())
             KeyInterceptor.launch(this);
+        else if (checkSelfPermission(WRITE_SECURE_SETTINGS) == PERMISSION_GRANTED)
+            KeyInterceptor.shutdown(true);
 
         useTermuxEKBarBehaviour = prefs.useTermuxEKBarBehaviour.get();
         showIMEWhileExternalConnected = prefs.showIMEWhileExternalConnected.get();
 
-        findViewById(R.id.mouse_buttons).setVisibility(isMouseHelperEnabled() && LorieView.connected() ? View.VISIBLE : View.GONE);
+        // p77: the bottom mouse bar is removed, never shown.
+        findViewById(R.id.mouse_buttons).setVisibility(View.GONE);
         showMouseAuxButtons(isMouseHelperEnabled());
         showStylusAuxButtons(prefs.showStylusClickOverride.get());
 
@@ -732,21 +754,25 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("ObsoleteSdkInt")
     Notification buildNotification() {
+        // p77 (Mudif): the notification used to say "Termux:X11" with
+        // the X logo. It is Mudif's now: penguin icon, purple accent,
+        // Arabic text, regardless of the system locale.
         NotificationCompat.Builder builder =  new NotificationCompat.Builder(this, getNotificationChannel(mNotificationManager))
-                .setContentTitle("Termux:X11")
-                .setSmallIcon(R.drawable.ic_x11_icon)
-                .setContentText(getResources().getText(R.string.lorie_notification_content_text))
+                .setContentTitle("مضيف")
+                .setSmallIcon(R.drawable.logo_mudif)
+                .setContentText("اسحب للأسفل لإظهار الخيارات")
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_MAX)
                 .setSilent(true)
                 .setShowWhen(false)
-                .setColor(0xFF607D8B);
+                .setColor(0xFF593BFE);
         return mInputHandler.setupNotification(prefs, builder).build();
     }
 
     private String getNotificationChannel(NotificationManager notificationManager){
-        String channelId = getResources().getString(R.string.x11_app_name);
-        String channelName = getResources().getString(R.string.x11_app_name);
+        // p77 (Mudif): the channel used to be named "Termux:X11".
+        String channelId = "مضيف";
+        String channelName = "مضيف";
         NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
         channel.setImportance(NotificationManager.IMPORTANCE_HIGH);
         channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
@@ -913,7 +939,8 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(()-> {
             boolean connected = LorieView.connected();
             setTerminalToolbarView();
-            findViewById(R.id.mouse_buttons).setVisibility(isMouseHelperEnabled() && connected ? View.VISIBLE : View.GONE);
+            // p77: the bottom mouse bar is removed, never shown.
+            findViewById(R.id.mouse_buttons).setVisibility(View.GONE);
             findViewById(R.id.stub).setVisibility(connected?View.INVISIBLE:View.VISIBLE);
             getLorieView().setVisibility(connected?View.VISIBLE:View.INVISIBLE);
 
