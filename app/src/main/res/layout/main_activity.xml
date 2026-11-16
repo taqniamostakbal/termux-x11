@@ -167,69 +167,78 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Mudif p58: compact one-mouse bar, fixed size. The bar was 188dp
-         wide and grew to ~268dp after one gear tap (the flip resized L/R
-         to 96dp), which is the giant panel in Anas's screenshot. Now the
-         three click zones are 48dp (the accessibility minimum touch
-         target), so the bar is 164dp wide forever, and the gear opens the
-         real viewer settings instead of flipping the bar. No id renamed. -->
+    <!-- Mudif p62: single-row pill, not a mouse picture. p58 shrank the
+         bar to a fixed 164x102dp oval, but Anas still calls it big
+         (image-407/408): a 102dp-tall oval is a quarter of the screen
+         height in landscape and mostly empty black space, and the gear
+         tap never fired (see MainActivity.java: the tap had to finish
+         within 100ms). Now the three click zones (48dp, the
+         accessibility minimum touch target) and the gear (40dp) sit in
+         ONE horizontal row inside the same dark pill the stylus cluster
+         already uses (mouse_bar_bg, 24dp radius), so the bar is 208dp
+         wide but only 56dp tall: 45 percent shorter, 30 percent less
+         area. The zones now show the L/M/R mouse icons (ic_mouse_left /
+         middle / right, the same drawables the stylus cluster uses):
+         the old zones were transparent and only readable because the
+         mouse-body drawing sat under them, and a blank pill would show
+         nothing to tap. No id renamed; the secondary_layer wrapper is gone (nothing
+         in code references it); the mouse-body vector
+         (ic_mouse_body.xml) is deleted, it was only this bar's
+         background. The wheel was decoration only (no scroll handling
+         on it); two-finger scroll on the viewer still scrolls. -->
     <LinearLayout
         android:id="@+id/mouse_buttons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
-        android:orientation="vertical"
-        android:background="@drawable/ic_mouse_body"
+        android:orientation="horizontal"
+        android:background="@drawable/mouse_bar_bg"
         android:padding="4dp"
         android:alpha="0.7"
         android:translationX="0px"
         android:translationY="0px">
 
-        <LinearLayout
-            android:id="@+id/mouse_buttons_secondary_layer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:visibility="visible">
+        <ImageButton
+            android:id="@+id/mouse_button_left_click"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:layout_margin="2dp"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:background="@drawable/mouse_buttons"
+            android:src="@drawable/ic_mouse_left"
+            android:contentDescription="Left click"
+            tools:ignore="HardcodedText,PxUsage,SmallSp" />
 
-            <ImageButton
-                android:id="@+id/mouse_button_left_click"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="48dp"
-                android:minHeight="48dp"
-                android:layout_margin="2dp"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:background="@drawable/mouse_buttons"
-                android:contentDescription="Left click"
-                tools:ignore="HardcodedText,PxUsage,SmallSp" />
+        <ImageButton
+            android:id="@+id/mouse_button_middle_click"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:layout_margin="2dp"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:background="@drawable/mouse_buttons"
+            android:src="@drawable/ic_mouse_middle"
+            android:contentDescription="Middle click"
+            tools:ignore="HardcodedText,PxUsage,SmallSp" />
 
-            <ImageButton
-                android:id="@+id/mouse_button_middle_click"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="48dp"
-                android:minHeight="48dp"
-                android:layout_margin="2dp"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:background="@drawable/mouse_buttons"
-                android:contentDescription="Middle click"
-                tools:ignore="HardcodedText,PxUsage,SmallSp" />
-
-            <ImageButton
-                android:id="@+id/mouse_button_right_click"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:minWidth="48dp"
-                android:minHeight="48dp"
-                android:layout_margin="2dp"
-                android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:background="@drawable/mouse_buttons"
-                android:contentDescription="Right click"
-                tools:ignore="HardcodedText,PxUsage,SmallSp" />
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/mouse_button_right_click"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:layout_margin="2dp"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:background="@drawable/mouse_buttons"
+            android:src="@drawable/ic_mouse_right"
+            android:contentDescription="Right click"
+            tools:ignore="HardcodedText,PxUsage,SmallSp" />
 
         <ImageButton
             android:id="@+id/mouse_buttons_position"
@@ -237,12 +246,12 @@
             android:layout_height="40dp"
             android:minWidth="40dp"
             android:minHeight="40dp"
-            android:layout_marginTop="6dp"
+            android:layout_margin="2dp"
             android:padding="8dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_gear"
             android:contentDescription="Viewer settings"
-            android:layout_gravity="center"
+            android:layout_gravity="center_vertical"
             android:background="@drawable/mouse_buttons"
             tools:ignore="HardcodedText,PxUsage,SmallSp" />
     </LinearLayout>

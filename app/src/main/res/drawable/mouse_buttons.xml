@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mudif mouse button zone (v2): the three ImageButtons over the one
-     mouse body are transparent by default (the body, wheel, and split
-     drawn by ic_mouse_body.xml show through), and while pressed the
-     zone lights Mudif purple #593BFE at 55 percent, so the white
-     outline and the wheel still read through the fill. Rounded 12dp.
+<!-- Mudif mouse button zone (v2, p62: the mouse-body background is
+     gone, the bar is a plain dark pill): the three ImageButtons are
+     transparent by default (the pill behind shows through, with the
+     L/M/R mouse icons on top), and while pressed the zone lights
+     Mudif purple #593BFE at 55 percent. Rounded 12dp.
      Selected state is used by the stylus cluster (mode indicator). -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
