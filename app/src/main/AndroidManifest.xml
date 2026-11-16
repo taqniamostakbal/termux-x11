@@ -5,7 +5,10 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <!-- Mudif p67: WRITE_SECURE_SETTINGS removed. It is a signature
+         permission a normal app cannot hold; declaring it bought only
+         the ADB dialog Anas reported. The viewer never writes a
+         secure setting anymore. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application

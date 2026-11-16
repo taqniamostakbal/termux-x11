@@ -82,8 +82,8 @@
     <string name="lorie_pref_dexMetaKeyCapture_summary">Samsung Dex فقط. يسمح باعتراض \"Alt+F4\"، \"Meta+D\"، \"Meta+E\"، إلخ.</string>
     <string name="lorie_pref_enableAccessibilityService">تمكين خدمة الوصول لاعتراض اختصارات النظام يدوياً.</string>
     <string name="lorie_pref_enableAccessibilityService_summary">فتح إعدادات الوصول.</string>
-    <string name="lorie_pref_enableAccessibilityServiceAutomatically">تمكين خدمة الوصول لاعتراض اختصارات النظام تلقائياً.</string>
-    <string name="lorie_pref_enableAccessibilityServiceAutomatically_summary">يتطلب صلاحية WRITE_SECURE_SETTINGS.</string>
+    <string name="lorie_pref_enableAccessibilityServiceAutomatically">تمكين خدمة الوصول لاعتراض اختصارات النظام.</string>
+    <string name="lorie_pref_enableAccessibilityServiceAutomatically_summary">فعّلها يدوياً من إعدادات أندرويد > إمكانية الوصول.</string>
     <string name="lorie_pref_pauseKeyInterceptingWithEsc">إيقاف اعتراض المفاتيح مؤقتاً بمفتاح Esc</string>
     <string name="lorie_pref_filterOutWinkey">تصفية مفتاح Win (Meta/Mod4) المعترض.</string>
     <string name="lorie_pref_filterOutWinkey_summary">يسمح لك باستخدام اختصارات Dex أثناء الاعتراض. يتطلب خدمة الوصول للعمل.</string>
@@ -159,6 +159,7 @@
 
     <string name="lorie_toast_copied_to_clipboard">تم النسخ إلى الحافظة</string>
     <string name="lorie_toast_wrong_resolution_format">تنسيق الدقة خاطئ</string>
+    <string name="lorie_toast_accessibility_manual">فعّل Termux:X11 من إعدادات أندرويد > إمكانية الوصول لاعتراض اختصارات النظام.</string>
     <string name="lorie_dialog_permission_denied_title">تم رفض الإذن</string>
     <string name="lorie_dialog_permission_denied_message">يتطلب Android صلاحية WRITE_SECURE_SETTINGS لبدء خدمة الوصول تلقائياً.\nيرجى تشغيل هذا الأمر باستخدام ADB:\nadb shell pm grant com.termux.x11 android.permission.WRITE_SECURE_SETTINGS</string>
     <string name="lorie_error_native_library_load">فشل تحميل المكتبة الأصلية. هل قمت بتثبيت APK الصحيح؟ جرب الإصدار universal.</string>

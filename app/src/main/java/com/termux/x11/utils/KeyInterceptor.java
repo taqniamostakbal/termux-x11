@@ -10,10 +10,8 @@ import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 
 import com.termux.x11.MainActivity;
-import com.termux.x11.R;
 
 import java.util.LinkedHashSet;
 
@@ -29,29 +27,21 @@ public class KeyInterceptor extends AccessibilityService {
         self = this;
     }
 
+    // Mudif p67: passive and read-only. The old code wrote
+    // Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES here, which needs
+    // WRITE_SECURE_SETTINGS, a signature permission a normal app cannot
+    // hold, so the write threw SecurityException and showed the ADB
+    // dialog Anas reported. The write is gone: if the user already
+    // enabled the service by hand in Android Settings > Accessibility,
+    // remember that; otherwise do nothing. The viewer works without
+    // the service (typing, touch, mouse); the service only adds
+    // hardware-key capture, and the manual path enables it with a
+    // normal user action, no ADB, no Developer options.
     public static void launch(@NonNull Context ctx) {
-        try {
-            String service = "com.termux.x11/.utils.KeyInterceptor";
-            String enabled = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-
-            if (enabled == null || enabled.isEmpty())
-                enabled = service;
-            else if (!enabled.contains(service))
-                enabled += ":" + service;
-
-            Settings.Secure.putString(ctx.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, enabled);
-            Settings.Secure.putString(ctx.getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, "1");
+        String enabled = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        String service = "com.termux.x11/.utils.KeyInterceptor";
+        if (enabled != null && enabled.contains(service))
             launchedAutomatically = true;
-        } catch (SecurityException e) {
-            new AlertDialog.Builder(ctx)
-                    .setTitle(R.string.lorie_dialog_permission_denied_title)
-                    .setMessage(R.string.lorie_dialog_permission_denied_message)
-                    .setNegativeButton(android.R.string.ok, null)
-                    .create()
-                    .show();
-
-            MainActivity.prefs.enableAccessibilityServiceAutomatically.put(false);
-        }
     }
 
     public static void shutdown(boolean onlyIfEnabledAutomatically) {
