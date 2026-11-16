@@ -33,7 +33,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.os.SystemClock;
 import android.service.notification.StatusBarNotification;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -486,10 +485,8 @@ public class MainActivity extends AppCompatActivity {
 
         pos.setOnTouchListener(new View.OnTouchListener() {
             final int touchSlop = (int) Math.pow(ViewConfiguration.get(MainActivity.this).getScaledTouchSlop(), 2);
-            final int tapTimeout = ViewConfiguration.getTapTimeout();
             final float[] startOffset = new float[2];
             final int[] startPosition = new int[2];
-            long startTime;
             @Override
             public boolean onTouch(View v, MotionEvent e) {
                 switch(e.getAction()) {
@@ -497,7 +494,6 @@ public class MainActivity extends AppCompatActivity {
                         primaryLayer.getLocationInWindow(startPosition);
                         startOffset[0] = e.getX();
                         startOffset[1] = e.getY();
-                        startTime = SystemClock.uptimeMillis();
                         pos.setPressed(true);
                         break;
                     case MotionEvent.ACTION_MOVE: {
@@ -520,7 +516,19 @@ public class MainActivity extends AppCompatActivity {
                         int deltaY = (int) (startOffset[1] - e.getY()) + (startPosition[1] - _pos[1]);
                         pos.setPressed(false);
 
-                        if (deltaX * deltaX + deltaY * deltaY < touchSlop && SystemClock.uptimeMillis() - startTime <= tapTimeout) {
+                        // Mudif p62: a tap is DOWN + UP within the touch
+                        // slop, however long it takes. The old code also
+                        // required the tap to finish within 100ms
+                        // (ViewConfiguration.getTapTimeout()), so a normal
+                        // deliberate tap on the gear never fired
+                        // performClick and the gear did nothing at all:
+                        // that is the "nothing works" in Anas's report.
+                        // Android's own tap detection has no time limit,
+                        // only the slop; a drag is told apart by
+                        // movement, not by time. This view is not
+                        // long-clickable, so no long-press gesture is
+                        // lost by dropping the time limit.
+                        if (deltaX * deltaX + deltaY * deltaY < touchSlop) {
                             v.performClick();
                             return true;
                         }
