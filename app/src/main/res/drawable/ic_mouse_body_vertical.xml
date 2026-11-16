@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mudif mouse bar, vertical twin (v2). Same mouse rotated to the tall
+     orientation the gear tap switches to: the three zones stack (left on
+     top, wheel in the middle, right at the bottom), the wheel stays a
+     wheel (it is redrawn here, not stretched from the horizontal file:
+     a stretched wheel would become a tall ellipse and stop reading as
+     a wheel). Viewport 68x260 matches the vertical container exactly
+     (buttons 48x96, 56x48, 48x96 plus margins plus padding). Swapped in
+     by the gear tap, hunk E in MainActivity.java.patch-notes. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="68dp"
+    android:height="260dp"
+    android:viewportWidth="68"
+    android:viewportHeight="260">
+    <!-- Body: tall oval, glass black 70 percent, white edge at 45 percent. -->
+    <path
+        android:fillColor="#B3000000"
+        android:strokeColor="#73FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M20,4 H48 C58,4 64,14 64,30 V230 C64,246 58,256 48,256 H20 C10,256 4,246 4,230 V30 C4,14 10,4 20,4 Z" />
+    <!-- Zone dividers: the gaps between the three stacked buttons. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:strokeAlpha="0.6"
+        android:pathData="M6,104 H62 M6,154 H62" />
+    <!-- Scroll wheel: white rounded rect, center of the middle zone. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.95"
+        android:pathData="M28,121 h12 a6,6 0,0 1 6,6 v4 a6,6 0,0 1 -6,6 h-12 a6,6 0,0 1 -6,-6 v-4 a6,6 0,0 1 6,-6 Z" />
+    <!-- Wheel grip: one dark line across the wheel. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#B3000000"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M28,129 H40" />
+</vector>
