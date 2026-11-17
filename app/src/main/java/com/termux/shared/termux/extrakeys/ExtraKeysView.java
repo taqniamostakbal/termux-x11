@@ -109,14 +109,15 @@ public final class ExtraKeysView extends GridLayout {
     }
 
     /** Defines the default value for {@link #mButtonTextColor} */
-    // Mudif P18.3: dark text — the keys are now light cards, not black.
-    public static final int DEFAULT_BUTTON_TEXT_COLOR = 0xFF1A1A1A;
+    // Mudif glass bar: white text, readable on the translucent dark pill.
+    public static final int DEFAULT_BUTTON_TEXT_COLOR = 0xFFFFFFFF;
     /** Defines the default value for {@link #mButtonActiveTextColor} */
     // Mudif: white, readable on the purple active background.
     public static final int DEFAULT_BUTTON_ACTIVE_TEXT_COLOR = 0xFFFFFFFF;
     /** Defines the default value for {@link #mButtonBackgroundColor} */
-    // Mudif P18.3: white card key (was transparent on a black bar).
-    public static final int DEFAULT_BUTTON_BACKGROUND_COLOR = 0xFFFFFFFF;
+    // Mudif glass bar: translucent dark pill (white at ~13 percent, measured
+    // from sample 01-glass.png) over the dark bar, not a white card.
+    public static final int DEFAULT_BUTTON_BACKGROUND_COLOR = 0x21FFFFFF;
     /** Defines the default value for {@link #mButtonActiveBackgroundColor} */
     // Mudif: brand purple #593BFE instead of grey.
     public static final int DEFAULT_BUTTON_ACTIVE_BACKGROUND_COLOR = 0xFF593BFE;
@@ -264,14 +265,14 @@ public final class ExtraKeysView extends GridLayout {
         return mButtonActiveBackgroundColor;
     }
 
-    /** Mudif P18.3: classic light card key background — rounded corners
-     *  (8dp) + thin border. Replaces the flat black ColorDrawable. */
+    /** Mudif glass bar: translucent dark pill, rounded corners (8dp) and
+     *  thin translucent white border. Replaces the P18.3 white card. */
     GradientDrawable keyBackground(int color) {
         float density = getResources().getDisplayMetrics().density;
         GradientDrawable d = new GradientDrawable();
         d.setColor(color);
         d.setCornerRadius(8 * density);
-        d.setStroke(Math.max(1, Math.round(density)), 0xFFE5E0FF);
+        d.setStroke(Math.max(1, Math.round(density)), 0x40FFFFFF);
         return d;
     }
 
@@ -287,18 +288,38 @@ public final class ExtraKeysView extends GridLayout {
         }
     }
 
-    /** Mudif P18.3: restore a key's look after a press. A held special key
-     *  (CTRL/ALT/...) keeps the purple active look; a normal key returns
-     *  to the light card look. */
+    /** Mudif glass bar: the KEYBOARD key is the permanent accent key: solid
+     *  brand purple #593BFE with a white icon, in every state, like sample
+     *  01-glass.png. It is a style-only accent; its click action is
+     *  untouched (toggleKeyboardVisibility in TermuxX11ExtraKeys). */
+    private static boolean isAccentKey(ExtraKeyButton buttonInfo) {
+        return "KEYBOARD".equals(buttonInfo.key);
+    }
+
+    /** Apply the permanent accent look to a key button. */
+    private void applyAccentKeyLook(Button button) {
+        button.setBackground(keyBackground(mButtonActiveBackgroundColor));
+        button.setTextColor(mButtonActiveTextColor);
+        tintKeyIcon(button, mButtonActiveTextColor);
+    }
+
+    /** Mudif glass bar: restore a key's look after a press. A held special
+     *  key (CTRL/ALT/...) keeps the purple active look; the accent key
+     *  (KEYBOARD) always keeps it; a normal key returns to the
+     *  translucent dark pill. */
     private void restoreKeyLook(Button button, ExtraKeyButton buttonInfo) {
         boolean held = false;
         if (isSpecialButton(buttonInfo)) {
             SpecialButtonState state = mSpecialButtons.get(SpecialButton.valueOf(buttonInfo.key));
             held = state != null && state.isActive;
         }
-        button.setBackground(keyBackground(held ? mButtonActiveBackgroundColor : mButtonBackgroundColor));
-        button.setTextColor(held ? mButtonActiveTextColor : mButtonTextColor);
-        tintKeyIcon(button, held ? mButtonActiveTextColor : mButtonTextColor);
+        if (held || isAccentKey(buttonInfo)) {
+            applyAccentKeyLook(button);
+            return;
+        }
+        button.setBackground(keyBackground(mButtonBackgroundColor));
+        button.setTextColor(mButtonTextColor);
+        tintKeyIcon(button, mButtonTextColor);
     }
 
     /** Set {@link #mLongPressTimeout}. */
@@ -363,12 +384,15 @@ public final class ExtraKeysView extends GridLayout {
                     button = new Button(getContext(), null, android.R.attr.buttonBarButtonStyle);
                 }
 
-                // Mudif P18.3: classic light card key, not black.
+                // Mudif glass bar: translucent dark pill, not a white card.
                 button.setBackground(keyBackground(mButtonBackgroundColor));
                 if (!setIcon(button, buttonInfo.key))
                     button.setText(buttonInfo.display);
                 button.setTextColor(mButtonTextColor);
                 tintKeyIcon(button, mButtonTextColor);
+                // Mudif glass bar: the KEYBOARD key is always solid purple.
+                if (isAccentKey(buttonInfo))
+                    applyAccentKeyLook(button);
                 button.setAllCaps(true);
                 button.setPadding(0, 0, 0, 0);
 
