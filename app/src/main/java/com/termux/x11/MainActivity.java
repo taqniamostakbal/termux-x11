@@ -722,9 +722,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ViewGroup.LayoutParams layoutParams = pager.getLayoutParams();
-        // Mudif P18.3: smaller bar — 28dp per row (was 37.5dp), so the
-        // 2-row bar is 56dp total (was 75dp).
-        layoutParams.height = Math.round(28f * getResources().getDisplayMetrics().density *
+        // Mudif p100 glass bar: 38dp per row (was 28dp), so the
+        // 2-row bar is 76dp total (was 56dp).
+        layoutParams.height = Math.round(38f * getResources().getDisplayMetrics().density *
                 (TermuxX11ExtraKeys.getExtraKeysInfo() == null ? 0 : TermuxX11ExtraKeys.getExtraKeysInfo().getMatrix().length));
         pager.setLayoutParams(layoutParams);
 

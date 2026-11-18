@@ -115,12 +115,38 @@ public final class ExtraKeysView extends GridLayout {
     // Mudif: white, readable on the purple active background.
     public static final int DEFAULT_BUTTON_ACTIVE_TEXT_COLOR = 0xFFFFFFFF;
     /** Defines the default value for {@link #mButtonBackgroundColor} */
-    // Mudif glass bar: translucent dark pill (white at ~13 percent, measured
-    // from sample 01-glass.png) over the dark bar, not a white card.
-    public static final int DEFAULT_BUTTON_BACKGROUND_COLOR = 0x21FFFFFF;
+    // Mudif glass bar: translucent dark pill. Raw fill 0x1AFFFFFF (white at
+    // 26/255, about 10 percent). Composited over the bar (#D81E1433 over the
+    // dark desktop) the mock pill reads #332B45, within 3 per channel of the
+    // sample target #322A47 and inside the sample range #302843..#352C4F.
+    // The previous fill (alpha 33) read #352E48 in the mock (green 4 over target).
+    public static final int DEFAULT_BUTTON_BACKGROUND_COLOR = 0x1AFFFFFF;
     /** Defines the default value for {@link #mButtonActiveBackgroundColor} */
     // Mudif: brand purple #593BFE instead of grey.
     public static final int DEFAULT_BUTTON_ACTIVE_BACKGROUND_COLOR = 0xFF593BFE;
+
+    // Mudif glass bar pill geometry, from SAMPLE-SPEC.md section 8
+    // (01-glass.png, 1280 wide). All values are dp at the rig density 2.0,
+    // so 65dp is 130px, 38dp is 76px, 6.5dp is 13px, 70dp is 140px pitch,
+    // 5dp is the 10px gap, 7.5dp is the 15px side margin.
+    // Width mechanism: reload() gives every button width 0 plus a FILL
+    // column spec with weight 1, so the GridLayout shares the row width
+    // equally after the margins below are taken out. 9 pills plus margins
+    // (15 + 8 x 10 + 15 = 110px) leave 1170px, which is 130px per pill
+    // with a 140px pitch. Height mechanism: the buttons fill the row, so
+    // the pill height IS the bar height. The bar height is NOT set here:
+    // MainActivity.setTerminalToolbarView in the fork sets the ViewPager
+    // height at runtime to 28dp per row (56px at density 2.0), which
+    // overrides the 38dp in main_activity.xml. PILL_HEIGHT_DP 38 only
+    // takes effect live once that fork value becomes 38dp per row; until
+    // then the live pill is 56px tall, not the spec 76px. That change is
+    // outside this build (MainActivity.java is not a file in this task).
+    public static final float PILL_WIDTH_DP = 65f;
+    public static final float PILL_HEIGHT_DP = 38f;
+    public static final float PILL_RADIUS_DP = 6.5f;
+    public static final float PILL_GAP_DP = 5f;
+    public static final float PILL_PITCH_DP = 70f;
+    public static final float BAR_SIDE_MARGIN_DP = 7.5f;
 
     /** Defines the minimum allowed duration in milliseconds for {@link #mLongPressTimeout}. */
     public static final int MIN_LONG_PRESS_DURATION = 200;
@@ -265,13 +291,14 @@ public final class ExtraKeysView extends GridLayout {
         return mButtonActiveBackgroundColor;
     }
 
-    /** Mudif glass bar: translucent dark pill, rounded corners (8dp) and
-     *  thin translucent white border. Replaces the P18.3 white card. */
+    /** Mudif glass bar: translucent dark pill, rounded corners (6.5dp,
+     *  13px at density 2.0, spec radius about 13px) and thin translucent
+     *  white border. Replaces the P18.3 white card. */
     GradientDrawable keyBackground(int color) {
         float density = getResources().getDisplayMetrics().density;
         GradientDrawable d = new GradientDrawable();
         d.setColor(color);
-        d.setCornerRadius(8 * density);
+        d.setCornerRadius(PILL_RADIUS_DP * density);
         d.setStroke(Math.max(1, Math.round(density)), 0x40FFFFFF);
         return d;
     }
@@ -386,6 +413,10 @@ public final class ExtraKeysView extends GridLayout {
 
                 // Mudif glass bar: translucent dark pill, not a white card.
                 button.setBackground(keyBackground(mButtonBackgroundColor));
+                // KEYBOARD shows the fork icon drawable (ic_extra_key_keyboard,
+                // white vector), never the word KEYBOARD: setIcon clears the
+                // text and sets the foreground icon. The accent look below only
+                // tints that icon white on the purple pill.
                 if (!setIcon(button, buttonInfo.key))
                     button.setText(buttonInfo.display);
                 button.setTextColor(mButtonTextColor);
@@ -395,6 +426,12 @@ public final class ExtraKeysView extends GridLayout {
                     applyAccentKeyLook(button);
                 button.setAllCaps(true);
                 button.setPadding(0, 0, 0, 0);
+                // Glass pill size: clear the Button minimums so the 38dp row
+                // height is not forced taller by the default button minimums.
+                button.setMinHeight(0);
+                button.setMinWidth(0);
+                button.setMinimumWidth(0);
+                button.setMinimumHeight(0);
 
                 button.setOnClickListener(view -> {
                     performExtraKeyButtonHapticFeedback(view, buttonInfo, button);
@@ -459,7 +496,17 @@ public final class ExtraKeysView extends GridLayout {
                 LayoutParams param = new GridLayout.LayoutParams();
                 param.width = 0;
                 param.height = 0;
-                param.setMargins(0, 0, 0, 0);
+                // Glass pill pitch: the FILL weight shares the row width
+                // equally, so the pitch and gap come from the margins. First
+                // pill gets the 15px (7.5dp) side margin, every later pill
+                // gets the 10px (5dp) gap on its left, last pill gets the
+                // 15px side margin on its right. At density 2.0 and 1280px
+                // wide that is 130px pills on a 140px pitch with a 10px gap.
+                float density = getResources().getDisplayMetrics().density;
+                int gapPx = Math.round(PILL_GAP_DP * density);
+                int sidePx = Math.round(BAR_SIDE_MARGIN_DP * density);
+                param.setMargins(col == 0 ? sidePx : gapPx, 0,
+                        col == buttons[row].length - 1 ? sidePx : 0, 0);
                 param.columnSpec = GridLayout.spec(col, GridLayout.FILL, 1.f);
                 param.rowSpec = GridLayout.spec(row, GridLayout.FILL, 1.f);
                 button.setLayoutParams(param);
@@ -663,6 +710,11 @@ public final class ExtraKeysView extends GridLayout {
                 id = R.drawable.ic_extra_key_settings;
                 break;
             case "KEYBOARD":
+                // Fork drawable, reused as-is: white 24dp keyboard vector.
+                // Size gap, recorded not fixed: at density 2.0 it renders
+                // 48px wide, but the spec glyph is 74x50px. Matching the spec
+                // size needs a resized fork drawable (37x25dp) or scaling in
+                // setIcon; neither is in this build, the mock draws spec size.
                 id = R.drawable.ic_extra_key_keyboard;
                 break;
             case "ZOOM_IN":
