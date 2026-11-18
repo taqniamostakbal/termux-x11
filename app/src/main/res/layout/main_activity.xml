@@ -250,11 +250,16 @@
             tools:ignore="HardcodedText,PxUsage,SmallSp" />
     </LinearLayout>
 
+    <!-- Mudif glass bar: 38dp is the spec pill height (76px at density
+         2.0). NOTE: MainActivity.setTerminalToolbarView in the fork sets
+         this ViewPager height at runtime to 28dp per row, which overrides
+         this value; the live pill is 56px tall until that fork value
+         becomes 38dp per row. -->
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/terminal_toolbar_view_pager"
         android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="37.5dp"
+        android:layout_height="38dp"
         android:background="#D81E1433"
         android:layout_gravity="bottom|center"/>
 
